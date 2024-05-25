@@ -3,12 +3,9 @@ CPU := atmega328p
 F_CPU := 16000000UL
 OPT := -Os
 FIRMWARE := firmware
-SRC_DIR := Src
-INC_DIRS := Inc
 
 # List of source files
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-INC_DIRS := $(addprefix -I, $(INC_DIRS))
+SRCS := $(shell find . -name "*.cpp")
 
 # Create a list of object files
 OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(SRCS:.cpp=.o)))
@@ -20,15 +17,15 @@ OBJDUMP = avr-objdump
 SIZE = avr-size
 
 # Compiler flags
-CPPFLAGS = $(OPT) -DF_CPU=$(F_CPU) -mmcu=$(CPU) $(INC_DIRS)
+CPPFLAGS = $(OPT) -DF_CPU=$(F_CPU) -mmcu=$(CPU)
 
 $(BUILD_DIR)/$(FIRMWARE).hex: $(BUILD_DIR)/$(FIRMWARE).elf
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 	@$(SIZE) $(BUILD_DIR)/$(FIRMWARE).hex
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(BUILD_DIR)
-	$(CXX) -c $(CPPFLAGS) -o $@ $<
+	$(CXX) $(CPPFLAGS) -c -o $@ $<
 
 $(BUILD_DIR)/$(FIRMWARE).elf: $(OBJS)
 	$(CXX) $(CPPFLAGS) -o $@ $^
